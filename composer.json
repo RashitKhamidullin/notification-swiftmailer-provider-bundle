@@ -1,0 +1,15 @@
+{
+  "name": "brp/notification-swiftmailer-provider-bundle",
+  "type": "symfony-bundle",
+  "description" : "SwiftMailer Provider Bundle",
+  "version": "0.0.1",
+  "require": {
+    "php":">=5.4.0",
+  },
+  "suggest" : {
+  },
+  "autoload": {
+    "psr-0": { "Brp\\NotificationSwiftMailerProviderBundle": "" }
+  },
+  "target-dir": "Brp/NotificationSwiftMailerProviderBundle"
+}
