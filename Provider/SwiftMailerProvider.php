@@ -15,7 +15,6 @@ use Brp\NotificationSwiftMailerProviderBundle\Parameters\PasswordParameter;
 use Brp\NotificationSwiftMailerProviderBundle\Parameters\PortParameter;
 use Brp\NotificationSwiftMailerProviderBundle\Parameters\UserNameParameter;
 
-
 class SwiftMailerProvider implements ProviderInterface
 {
     private $mailer;
@@ -35,31 +34,13 @@ class SwiftMailerProvider implements ProviderInterface
     private $templateParams = array();
     private $connectionParams = array();
 
-    public function __construct(\Twig_Environment $tw)
+    private $tw;
+
+    public function __construct()
     {
-        $this->host     = new HostParameter();
-        $this->port     = new PortParameter();
-        $this->userName = new UserNameParameter();
-        $this->password = new PasswordParameter();
-        $this->ssl      = new SslParameter();
-
-        $this->connectionParams[]     = $this->host;
-        $this->connectionParams[]     = $this->port;
-        $this->connectionParams[] = $this->userName;
-        $this->connectionParams[] = $this->password;
-        $this->connectionParams[]      = $this->ssl;
-
-        $this->subject   = new SubjectParameter($tw);
-        $this->emailFrom = new EmailFromParameter($tw);
-        $this->emailTo   = new EmailToParameter();
-        $this->cc        = new CarbonCopyParameter();
-        $this->body      = new BodyParameter($tw);
-
-        $this->templateParams[]   = $this->subject;
-        $this->templateParams[] = $this->emailFrom;
-        $this->templateParams[]   = $this->emailTo;
-        $this->templateParams[]        = $this->cc;
-        $this->templateParams[]      = $this->body;
+        $this->configureTwig();
+        $this->configureConnectionParams();
+        $this->configureTemplateParams();
     }
 
     public function send()
@@ -78,7 +59,7 @@ class SwiftMailerProvider implements ProviderInterface
             ->setFrom($this->emailFrom->getConvertedValue())
             ->setTo($this->emailTo->getConvertedValue())
             ->setCc($this->cc->getConvertedValue())
-            ->setBody($this->body->getConvertedValue())
+            ->setBody($this->body->getConvertedValue(), 'text/html')
         ;
 
         $this->mailer->send($message);
@@ -114,5 +95,47 @@ class SwiftMailerProvider implements ProviderInterface
     public function getDescription()
     {
         return 'Simple swiftmailer provider';
+    }
+
+    public function setLoader(\Twig_LoaderInterface $loader)
+    {
+        $this->tw->setLoader($loader);
+    }
+
+    protected function configureTwig()
+    {
+        $this->tw = new \Twig_Environment();
+        $this->tw->setCache(false);
+        $this->tw->setLoader(new \Twig_Loader_Array([]));
+    }
+
+    protected function configureConnectionParams()
+    {
+        $this->host     = new HostParameter();
+        $this->port     = new PortParameter();
+        $this->userName = new UserNameParameter();
+        $this->password = new PasswordParameter();
+        $this->ssl      = new SslParameter();
+
+        $this->connectionParams[] = $this->host;
+        $this->connectionParams[] = $this->port;
+        $this->connectionParams[] = $this->userName;
+        $this->connectionParams[] = $this->password;
+        $this->connectionParams[] = $this->ssl;
+    }
+
+    protected function configureTemplateParams()
+    {
+        $this->subject   = new SubjectParameter($this->tw);
+        $this->emailFrom = new EmailFromParameter($this->tw);
+        $this->emailTo   = new EmailToParameter();
+        $this->cc        = new CarbonCopyParameter();
+        $this->body      = new BodyParameter($this->tw);
+
+        $this->templateParams[] = $this->subject;
+        $this->templateParams[] = $this->emailFrom;
+        $this->templateParams[] = $this->emailTo;
+        $this->templateParams[] = $this->cc;
+        $this->templateParams[] = $this->body;
     }
 }

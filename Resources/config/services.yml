@@ -1,6 +1,7 @@
 services:
     brp.swiftmailer_provider:
         class: Brp\NotificationSwiftMailerProviderBundle\Provider\SwiftMailerProvider
-        arguments: ["@twig"]
+        calls:
+            - [setLoader, ['@?brp.db_twig_loader']]
         tags:
             - { name: brp_notification_sender_bundle.provider }
