@@ -1,7 +1,6 @@
 <?php
 namespace Brp\NotificationSwiftMailerProviderBundle\Parameters;
 
-use Brp\NotificationSenderBundle\Parameter\ProviderConnectionParameterInterface;
 use Brp\NotificationSenderBundle\Parameter\StringProviderParameter;
 
 class EmailFromParameter extends StringProviderParameter
