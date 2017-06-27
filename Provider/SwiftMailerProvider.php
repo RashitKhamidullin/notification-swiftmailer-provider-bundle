@@ -4,7 +4,6 @@ namespace Brp\NotificationSwiftMailerProviderBundle\Provider;
 use Brp\NotificationSenderBundle\Provider\ProviderInterface;
 
 use Brp\NotificationSwiftMailerProviderBundle\Parameters\BodyParameter;
-use Brp\NotificationSwiftMailerProviderBundle\Parameters\CarbonCopyParameter;
 use Brp\NotificationSwiftMailerProviderBundle\Parameters\EmailFromParameter;
 use Brp\NotificationSwiftMailerProviderBundle\Parameters\EmailToParameter;
 use Brp\NotificationSwiftMailerProviderBundle\Parameters\SslParameter;
@@ -26,10 +25,10 @@ class SwiftMailerProvider implements ProviderInterface
     private $ssl;
 
     private $subject;
+    /** @var EmailFromParameter $emailFrom */
     private $emailFrom;
     private $emailTo;
     private $body;
-    private $cc;
 
     private $templateParams = array();
     private $connectionParams = array();
@@ -45,22 +44,9 @@ class SwiftMailerProvider implements ProviderInterface
 
     public function send()
     {
-        $transport = \Swift_SmtpTransport::newInstance(
-            $this->host->getValue(),
-            $this->port->getValue(),
-            'SSL'
-        )
-            ->setUsername($this->userName->getValue())
-            ->setPassword($this->password->getValue())
-        ;
+        $this->configureMailer();
 
-        $this->mailer = \Swift_Mailer::newInstance($transport);
-        $message = \Swift_Message::newInstance($this->subject->getConvertedValue())
-            ->setFrom($this->emailFrom->getConvertedValue())
-            ->setTo($this->emailTo->getConvertedValue())
-            ->setCc($this->cc->getConvertedValue())
-            ->setBody($this->body->getConvertedValue(), 'text/html')
-        ;
+        $message = $this->createMessage();
 
         $this->mailer->send($message);
     }
@@ -77,6 +63,8 @@ class SwiftMailerProvider implements ProviderInterface
 
     public function checkAvailable()
     {
+        $this->configureMailer();
+
         try{
             $this->mailer->getTransport()->start();
             return true;
@@ -129,13 +117,37 @@ class SwiftMailerProvider implements ProviderInterface
         $this->subject   = new SubjectParameter($this->tw);
         $this->emailFrom = new EmailFromParameter($this->tw);
         $this->emailTo   = new EmailToParameter();
-        $this->cc        = new CarbonCopyParameter();
         $this->body      = new BodyParameter($this->tw);
 
         $this->templateParams[] = $this->subject;
         $this->templateParams[] = $this->emailFrom;
         $this->templateParams[] = $this->emailTo;
-        $this->templateParams[] = $this->cc;
         $this->templateParams[] = $this->body;
+    }
+
+    protected function configureMailer()
+    {
+        $transport = \Swift_SmtpTransport::newInstance(
+            $this->host->getValue(),
+            $this->port->getValue(),
+            'SSL'
+        )
+            ->setUsername($this->userName->getValue())
+            ->setPassword($this->password->getValue())
+        ;
+
+        $this->mailer = \Swift_Mailer::newInstance($transport);
+    }
+
+    /**
+     * @return \Swift_Message
+     */
+    protected function createMessage()
+    {
+        return \Swift_Message::newInstance($this->subject->getConvertedValue())
+            ->setFrom($this->emailFrom->getConvertedValue())
+            ->setTo($this->emailTo->getConvertedValue())
+            ->setBody($this->body->getConvertedValue(), 'text/html')
+        ;
     }
 }
