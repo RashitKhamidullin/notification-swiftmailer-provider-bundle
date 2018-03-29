@@ -9,7 +9,6 @@
   "suggest" : {
   },
   "autoload": {
-    "psr-0": { "Brp\\NotificationSwiftMailerProviderBundle": "" }
-  },
-  "target-dir": "Brp/NotificationSwiftMailerProviderBundle"
+    "psr-4": { "Brp\\NotificationSwiftMailerProviderBundle\\": "" }
+  }
 }
